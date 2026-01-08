@@ -5,6 +5,7 @@ import com.farukkaraman.springbootblogwithquerydsl.security.jwt.JwtTokenProvider
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -18,13 +19,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${app.oauth2.redirect-uri:https://blog-frontend-fk.vercel.app/oauth2/callback}")
+    private String redirectUri;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String token = jwtTokenProvider.generateToken(userDetails);
 
-        String targetUrl = UriComponentsBuilder.fromUriString("/oauth2/redirect")
+        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token)
                 .build().toUriString();
 
